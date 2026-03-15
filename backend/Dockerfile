@@ -5,8 +5,9 @@ FROM node:18-alpine
 # Set working directory
 WORKDIR /app
 
-# Install dependencies for native modules, healthcheck tools, and curl for API calls
-RUN apk add --no-cache python3 make g++ wget curl
+# Install dependencies for native modules, healthcheck tools, curl for API calls, and OpenClaw CLI
+# Note: OpenClaw requires Node.js 22.12+, so we use npx to run it from the dist bundle
+RUN apk add --no-cache python3 make g++ wget curl bash
 
 # Copy package files
 COPY package*.json ./

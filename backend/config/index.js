@@ -50,6 +50,19 @@ class Config {
   getNumber(key) {
     return parseInt(this.config[key], 10);
   }
+
+  getBoolean(key) {
+    const value = this.config[key];
+    return value === 'true' || value === '1' || value === 'yes';
+  }
+}
+
+module.exports = new Config();];
+  }
+
+  getNumber(key) {
+    return parseInt(this.config[key], 10);
+  }
 }
 
 module.exports = new Config();

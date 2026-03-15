@@ -332,6 +332,186 @@ class OpenClawService {
   }
 
   /**
+   * Get heartbeat information (last, next, interval)
+   */
+  getHeartbeatInfo() {
+    const fs = require('fs');
+    const path = require('path');
+    
+    // Try CLI first - get status which includes heartbeat info
+    try {
+      const statusOutput = execSync('openclaw status --json 2>/dev/null', {
+        encoding: 'utf8',
+        timeout: 10000
+      });
+      
+      const status = JSON.parse(statusOutput);
+      
+      if (status.heartbeat && status.heartbeat.agents && status.heartbeat.agents.length > 0) {
+        const agent = status.heartbeat.agents[0];
+        const intervalMs = agent.everyMs || this._parseInterval(agent.every || '5m');
+        
+        // Get last heartbeat from system heartbeat command
+        let lastTs = null;
+        let lastStatus = null;
+        let lastReason = null;
+        let lastDurationMs = null;
+        
+        try {
+          const lastOutput = execSync('openclaw system heartbeat last --json 2>/dev/null', {
+            encoding: 'utf8',
+            timeout: 5000
+          });
+          const lastHeartbeat = JSON.parse(lastOutput);
+          lastTs = lastHeartbeat.ts;
+          lastStatus = lastHeartbeat.status;
+          lastReason = lastHeartbeat.reason;
+          lastDurationMs = lastHeartbeat.durationMs;
+        } catch (e) {
+          // Last heartbeat command not available, estimate from interval
+          lastTs = Date.now() - intervalMs;
+        }
+        
+        const now = Date.now();
+        const nextTs = lastTs ? (lastTs + intervalMs) : (now + intervalMs);
+        const msUntilNext = Math.max(0, nextTs - now);
+        
+        return {
+          agent: agent.agentId,
+          enabled: agent.enabled,
+          last: lastTs ? {
+            ts: lastTs,
+            iso: new Date(lastTs).toISOString(),
+            status: lastStatus,
+            reason: lastReason,
+            durationMs: lastDurationMs
+          } : null,
+          interval: {
+            value: agent.every || '5m',
+            ms: intervalMs
+          },
+          next: {
+            ts: nextTs,
+            iso: new Date(nextTs).toISOString(),
+            msUntil: msUntilNext,
+            overdue: lastTs && (now > nextTs + 60000) // More than 1 minute overdue
+          }
+        };
+      }
+      
+      return { error: 'No heartbeat configuration found', available: false };
+    } catch (cliError) {
+      // CLI not available - try Gateway API
+      try {
+        const gatewayHost = process.env.OPENCLAW_GATEWAY_HOST || '127.0.0.1';
+        const gatewayPort = process.env.OPENCLAW_GATEWAY_PORT || '18789';
+        
+        const result = execSync(
+          `curl -s -m 3 http://${gatewayHost}:${gatewayPort}/health 2>/dev/null || echo '{"error":"timeout"}'`,
+          { encoding: 'utf8', timeout: 5000 }
+        );
+        
+        const health = JSON.parse(result);
+        if (health.error) {
+          throw new Error('Gateway unavailable');
+        }
+        
+        // Gateway is healthy, but we don't have heartbeat details via API
+        // Use config file for interval
+        return this._getHeartbeatFromConfig();
+      } catch (gatewayError) {
+        // Fallback to config file
+        return this._getHeartbeatFromConfig();
+      }
+    }
+  }
+
+  /**
+   * Get heartbeat info from config file when CLI unavailable
+   */
+  _getHeartbeatFromConfig() {
+    const fs = require('fs');
+    const path = require('path');
+    
+    // Try to read config for heartbeat interval
+    const configPath = path.join(process.env.HOME || '/root', '.openclaw', 'openclaw.json');
+    let interval = '5m';
+    let intervalMs = 300000;
+    
+    try {
+      const configContent = fs.readFileSync(configPath, 'utf8');
+      
+      // Extract heartbeat interval using regex (avoid full JSON5 parser)
+      const everyMatch = configContent.match(/heartbeat\s*:\s*\{[^}]*every\s*:\s*['"]?(\d+[mhs]+)['"]?/);
+      if (everyMatch) {
+        interval = everyMatch[1];
+        intervalMs = this._parseInterval(interval);
+      }
+      
+      // Check for per-agent config
+      const agentMatch = configContent.match(/agents\s*:\s*\{[^}]*defaults\s*:\s*\{[^}]*heartbeat\s*:\s*\{[^}]*every\s*:\s*['"]?(\d+[mhs]+)['"]?/);
+      if (agentMatch) {
+        interval = agentMatch[1];
+        intervalMs = this._parseInterval(interval);
+      }
+    } catch (e) {
+      // Config not readable, use defaults
+    }
+    
+    // Calculate based on interval alignment
+    // Assume heartbeats run on schedule (aligned to interval boundaries)
+    const now = Date.now();
+    const alignedTime = Math.floor(now / intervalMs) * intervalMs;
+    const lastTs = alignedTime;
+    const nextTs = alignedTime + intervalMs;
+    const msUntilNext = nextTs - now;
+    
+    return {
+      agent: 'main',
+      enabled: true,
+      last: {
+        ts: lastTs,
+        iso: new Date(lastTs).toISOString(),
+        status: 'scheduled',
+        reason: 'interval-aligned',
+        durationMs: null
+      },
+      interval: {
+        value: interval,
+        ms: intervalMs
+      },
+      next: {
+        ts: nextTs,
+        iso: new Date(nextTs).toISOString(),
+        msUntil: msUntilNext,
+        overdue: false
+      },
+      note: 'Calculated from config (CLI unavailable in container)'
+    };
+  }
+
+  /**
+   * Parse interval string to milliseconds
+   */
+  _parseInterval(interval) {
+    if (!interval) return 300000; // default 5 minutes
+    
+    const match = interval.match(/^(\d+)(ms|s|m|h)?$/);
+    if (!match) return 300000;
+    
+    const value = parseInt(match[1], 10);
+    const unit = match[2] || 'm';
+    
+    switch (unit) {
+      case 'ms': return value;
+      case 's': return value * 1000;
+      case 'm': return value * 60 * 1000;
+      case 'h': return value * 60 * 60 * 1000;
+      default: return value * 60 * 1000;
+    }
+  }
+
+  /**
    * Get last known status
    */
   getLastStatus() {

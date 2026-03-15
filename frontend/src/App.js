@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getHealth, getMetrics, getBoardTasks, createBoardTask, updateBoardTask, moveBoardTask, deleteBoardTask, assignBoardTask } from './api';
+import { getHealth, getMetrics, getBoardTasks, createBoardTask, updateBoardTask, moveBoardTask, deleteBoardTask, assignBoardTask, getOpenClawHeartbeat } from './api';
 import TaskBoard from './TaskBoard';
 import TaskModal from './TaskModal';
 import './App.css';
@@ -13,12 +13,15 @@ function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const [modalMode, setModalMode] = useState('create');
+  const [heartbeatInfo, setHeartbeatInfo] = useState(null);
 
   useEffect(() => {
     checkBackendHealth();
     const metricsInterval = setInterval(fetchMetrics, 5000);
+    const heartbeatInterval = setInterval(fetchHeartbeatInfo, 5000);
     return () => {
       clearInterval(metricsInterval);
+      clearInterval(heartbeatInterval);
     };
   }, []);
 
@@ -62,6 +65,15 @@ function App() {
       setBoardTasks(response.data);
     } catch (err) {
       console.error('Failed to fetch board tasks:', err);
+    }
+  };
+
+  const fetchHeartbeatInfo = async () => {
+    try {
+      const response = await getOpenClawHeartbeat();
+      setHeartbeatInfo(response.data);
+    } catch (err) {
+      console.error('Failed to fetch heartbeat info:', err);
     }
   };
 
@@ -138,6 +150,18 @@ function App() {
     if (hours > 0) return `${hours}h ${minutes % 60}m`;
     if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
     return `${seconds}s`;
+  };
+
+  const formatCountdown = (ms) => {
+    if (ms <= 0) return 'now';
+    const seconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(seconds / 60);
+    if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
+    return `${seconds}s`;
+  };
+
+  const formatTimestamp = (ts) => {
+    return new Date(ts).toLocaleTimeString();
   };
 
   return (
@@ -246,6 +270,29 @@ function App() {
                     <div className="metric-detail">
                       Since {new Date().toLocaleDateString()}
                     </div>
+                  </div>
+                </div>
+
+                {/* Heartbeat */}
+                <div className="metric-card">
+                  <div className="metric-icon">💓</div>
+                  <div className="metric-content">
+                    <h3>Heartbeat</h3>
+                    {heartbeatInfo && !heartbeatInfo.error ? (
+                      <>
+                        <div className="metric-value">{heartbeatInfo.interval?.value || '5m'}</div>
+                        <div className="metric-detail">
+                          Next: {formatCountdown(heartbeatInfo.next?.msUntil || 0)}
+                        </div>
+                        <div className="metric-detail">
+                          Last: {formatTimestamp(heartbeatInfo.last?.ts || 0)}
+                        </div>
+                      </>
+                    ) : (
+                      <div className="metric-detail">
+                        {heartbeatInfo?.error || 'Loading...'}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

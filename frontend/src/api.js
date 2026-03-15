@@ -47,6 +47,7 @@ export const getOpenClawStatus = () => api.get('/openclaw/status');
 export const getOpenClawHealth = () => api.get('/openclaw/health');
 export const getOpenClawRuntime = () => api.get('/openclaw/runtime');
 export const getOpenClawTasks = () => api.get('/openclaw/tasks');
+export const getOpenClawHeartbeat = () => api.get('/openclaw/heartbeat');
 export const testOpenClawConnectivity = () => api.get('/openclaw/connectivity');
 
 // Board Task Management (Kanban-style)

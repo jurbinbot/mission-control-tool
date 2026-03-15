@@ -148,6 +148,11 @@ app.get('/openclaw/connectivity', (req, res) => {
   res.json(connectivity);
 });
 
+app.get('/openclaw/heartbeat', (req, res) => {
+  const heartbeat = openclawService.getHeartbeatInfo();
+  res.json(heartbeat);
+});
+
 // Backup endpoints
 app.post('/backups', (req, res) => {
   const backupName = req.body.name || null;
