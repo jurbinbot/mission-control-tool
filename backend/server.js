@@ -287,6 +287,37 @@ app.delete('/board/tasks/:id', (req, res) => {
   res.json({ success: true, id: req.params.id });
 });
 
+// Claim next available task (atomic operation for agent pickup)
+app.post('/board/tasks/claim', (req, res) => {
+  const { agentName } = req.body;
+  if (!agentName) {
+    return res.status(400).json({ error: 'agentName is required' });
+  }
+  
+  // Get all TODO tasks sorted by priority
+  const priorityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
+  const todoTasks = boardTaskService.getTasksByStatus('todo')
+    .filter(t => !t.assignedAgent)
+    .sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+  
+  if (todoTasks.length === 0) {
+    return res.json({ claimed: false, message: 'No available tasks to claim' });
+  }
+  
+  // Claim the highest priority task
+  const task = todoTasks[0];
+  task.update({ 
+    status: 'in_progress', 
+    assignedAgent: agentName 
+  });
+  
+  logger.info(`Task claimed: ${task.id} by ${agentName}`);
+  res.json({ 
+    claimed: true, 
+    task: boardTaskService.formatTaskResponse(task) 
+  });
+});
+
 // WebSocket connection
 wss.on('connection', (ws) => {
   console.log('Client connected');

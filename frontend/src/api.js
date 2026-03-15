@@ -74,4 +74,6 @@ export const assignBoardTask = (id, agentName) => api.patch(`/board/tasks/${id}/
 
 export const deleteBoardTask = (id) => api.delete(`/board/tasks/${id}`);
 
+export const claimNextTask = (agentName) => api.post('/board/tasks/claim', { agentName });
+
 export default api;
