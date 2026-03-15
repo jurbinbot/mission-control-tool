@@ -3,7 +3,7 @@
 const { program } = require('commander');
 const axios = require('axios');
 
-const API_BASE_URL = process.env.MISSION_CONTROL_API_URL || 'http://localhost:3001';
+const API_BASE_URL = process.env.MISSION_CONTROL_API_URL || 'http://localhost:4432';
 
 const api = axios.create({
   baseURL: API_BASE_URL,

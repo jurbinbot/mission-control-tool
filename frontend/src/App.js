@@ -337,7 +337,7 @@ function App() {
           <section className="error-section">
             <h2>Connection Error</h2>
             <p>Cannot connect to the Mission Control backend.</p>
-            <p>Make sure the backend is running on port 3001.</p>
+            <p>Make sure the backend is running on port 4432.</p>
             <button onClick={checkBackendHealth}>Retry Connection</button>
           </section>
         )}

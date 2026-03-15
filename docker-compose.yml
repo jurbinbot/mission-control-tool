@@ -10,7 +10,7 @@ services:
       dockerfile: Dockerfile
     container_name: mission-control-backend
     ports:
-      - "3001:3001"
+      - "4432:4432"
     environment:
       - NODE_ENV=production
       - PORT=3001
@@ -65,7 +65,7 @@ services:
     environment:
       # API_URL is injected at runtime by docker-entrypoint.sh
       # Set this to the externally accessible backend URL (e.g., https://api.example.com)
-      - API_URL=${API_URL:-http://localhost:3001}
+      - API_URL=${API_URL:-http://localhost:4432}
     depends_on:
       - backend
     restart: unless-stopped

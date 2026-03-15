@@ -8,7 +8,7 @@ const getApiBaseUrl = () => {
     return window.REACT_APP_API_URL;
   }
   // Fall back to build-time env var or default
-  return process.env.REACT_APP_API_URL || 'http://localhost:3001';
+  return process.env.REACT_APP_API_URL || 'http://localhost:4432';
 };
 
 const API_BASE_URL = getApiBaseUrl();

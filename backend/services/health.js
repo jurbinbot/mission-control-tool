@@ -248,7 +248,7 @@ class HealthService {
     }
 
     // Default: check local health endpoint
-    const port = config.get('PORT') || '3001';
+    const port = config.get('PORT') || '4432';
     return [
       { url: `http://localhost:${port}/health`, name: 'mission-control', timeout: 5000 }
     ];

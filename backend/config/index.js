@@ -29,7 +29,7 @@ class Config {
     });
 
     // Default values
-    this.config.PORT = this.config.PORT || '3001';
+    this.config.PORT = this.config.PORT || '4432';
     this.config.LOG_LEVEL = this.config.LOG_LEVEL || 'info';
     this.config.CPU_THRESHOLD = this.config.CPU_THRESHOLD || '80';
     this.config.MEMORY_THRESHOLD = this.config.MEMORY_THRESHOLD || '80';
