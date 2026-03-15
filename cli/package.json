@@ -1,0 +1,24 @@
+{
+  "name": "mission-control-cli",
+  "version": "1.0.0",
+  "description": "Mission Control CLI - Monitor and manage OpenClaw deployments",
+  "main": "mctl.js",
+  "bin": {
+    "mctl": "./mctl.js"
+  },
+  "scripts": {
+    "start": "node mctl.js"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "commander": "^11.1.0"
+  },
+  "keywords": [
+    "openclaw",
+    "monitoring",
+    "cli",
+    "devops"
+  ],
+  "author": "OpenClaw",
+  "license": "MIT"
+}

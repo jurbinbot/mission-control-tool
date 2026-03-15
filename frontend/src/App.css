@@ -1,0 +1,251 @@
+.App {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #0f0f1a;
+}
+
+.App-header {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid #2d2d44;
+}
+
+.App-header h1 {
+  font-size: 1.8rem;
+  color: #e94560;
+  margin-bottom: 0.25rem;
+}
+
+.App-header .subtitle {
+  font-size: 0.9rem;
+  color: #8892b0;
+}
+
+.dashboard {
+  flex: 1;
+  padding: 1.5rem 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Status Bar */
+.status-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.status-indicator.connected {
+  background: rgba(46, 204, 113, 0.2);
+  color: #2ecc71;
+}
+
+.status-indicator.disconnected {
+  background: rgba(231, 76, 60, 0.2);
+  color: #e74c3c;
+}
+
+.status-indicator.connecting {
+  background: rgba(241, 196, 15, 0.2);
+  color: #f1c40f;
+}
+
+.status-indicator.error {
+  background: rgba(231, 76, 60, 0.2);
+  color: #e74c3c;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.error-text {
+  color: #e74c3c;
+  font-size: 0.85rem;
+}
+
+/* Metrics Grid */
+.metrics-grid h2 {
+  font-size: 1.2rem;
+  color: #e0e0e0;
+  margin-bottom: 1rem;
+}
+
+.metrics-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.metric-card {
+  background: #1a1a2e;
+  border-radius: 12px;
+  padding: 1.25rem;
+  border: 1px solid #2d2d44;
+  position: relative;
+  overflow: hidden;
+}
+
+.metric-card:hover {
+  border-color: #3d3d54;
+  background: #1e1e32;
+}
+
+.metric-icon {
+  font-size: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.metric-content h3 {
+  font-size: 0.85rem;
+  color: #8892b0;
+  margin-bottom: 0.25rem;
+  font-weight: normal;
+}
+
+.metric-value {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #e0e0e0;
+  margin-bottom: 0.25rem;
+}
+
+.metric-detail {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.metric-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: #2d2d44;
+}
+
+.metric-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #e94560, #ff6b6b);
+  transition: width 0.5s ease;
+}
+
+/* Alerts Section */
+.alerts-section {
+  margin-top: 1.5rem;
+}
+
+.alerts-section h2 {
+  font-size: 1.2rem;
+  color: #e0e0e0;
+  margin-bottom: 1rem;
+}
+
+.alerts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.alert-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 8px;
+  background: rgba(231, 76, 60, 0.1);
+  border-left: 4px solid #e74c3c;
+}
+
+.alert-item.warning {
+  background: rgba(241, 196, 15, 0.1);
+  border-left-color: #f1c40f;
+}
+
+.alert-item.critical {
+  background: rgba(231, 76, 60, 0.15);
+  border-left-color: #e74c3c;
+}
+
+.alert-type {
+  font-weight: 600;
+  color: #e0e0e0;
+  font-size: 0.9rem;
+}
+
+.alert-message {
+  color: #8892b0;
+  font-size: 0.85rem;
+}
+
+/* Error Section */
+.error-section {
+  text-align: center;
+  padding: 3rem;
+}
+
+.error-section h2 {
+  color: #e74c3c;
+  margin-bottom: 1rem;
+}
+
+.error-section p {
+  color: #8892b0;
+  margin-bottom: 0.5rem;
+}
+
+.error-section button {
+  margin-top: 1.5rem;
+  padding: 0.75rem 1.5rem;
+  background: #e94560;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.error-section button:hover {
+  background: #ff6b6b;
+}
+
+/* Footer */
+.App-footer {
+  padding: 1rem 2rem;
+  border-top: 1px solid #2d2d44;
+  text-align: center;
+  color: #6b7280;
+  font-size: 0.8rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .App-header {
+    padding: 1rem 1.5rem;
+  }
+
+  .dashboard {
+    padding: 1rem 1.5rem;
+  }
+
+  .metrics-cards {
+    grid-template-columns: 1fr;
+  }
+}
