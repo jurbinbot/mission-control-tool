@@ -4,6 +4,7 @@ const TaskModal = ({ isOpen, onClose, onSave, onDelete, task, mode = 'create' })
   const [formData, setFormData] = useState({
     title: '',
     description: '',
+    status: 'backlog',
     priority: 'medium',
     labels: [],
     assignedAgent: ''
@@ -15,6 +16,7 @@ const TaskModal = ({ isOpen, onClose, onSave, onDelete, task, mode = 'create' })
       setFormData({
         title: task.title || '',
         description: task.description || '',
+        status: task.status || 'backlog',
         priority: task.priority || 'medium',
         labels: task.labels || [],
         assignedAgent: task.assignedAgent || ''
@@ -23,6 +25,7 @@ const TaskModal = ({ isOpen, onClose, onSave, onDelete, task, mode = 'create' })
       setFormData({
         title: '',
         description: '',
+        status: 'backlog',
         priority: 'medium',
         labels: [],
         assignedAgent: ''
@@ -107,6 +110,22 @@ const TaskModal = ({ isOpen, onClose, onSave, onDelete, task, mode = 'create' })
               placeholder="Task description..."
               rows={3}
             />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="status">Status</label>
+            <select
+              id="status"
+              name="status"
+              value={formData.status}
+              onChange={handleChange}
+            >
+              <option value="backlog">Backlog</option>
+              <option value="todo">TODO</option>
+              <option value="in_progress">In Progress</option>
+              <option value="complete">Complete</option>
+              <option value="failed">Failed</option>
+            </select>
           </div>
 
           <div className="form-group">

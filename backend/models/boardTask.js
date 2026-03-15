@@ -10,7 +10,8 @@ const BoardTaskStatus = {
   BACKLOG: 'backlog',
   TODO: 'todo',
   IN_PROGRESS: 'in_progress',
-  COMPLETE: 'complete'
+  COMPLETE: 'complete',
+  FAILED: 'failed'
 };
 
 /**

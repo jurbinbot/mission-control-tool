@@ -8,8 +8,19 @@ const TaskBoard = ({ tasks, onMoveTask, onEditTask, onDeleteTask, onAssignTask }
     { id: 'backlog', title: 'Backlog', icon: '📋' },
     { id: 'todo', title: 'TODO', icon: '📝' },
     { id: 'in_progress', title: 'In Progress', icon: '🔄' },
-    { id: 'complete', title: 'Complete', icon: '✅' }
+    { id: 'complete', title: 'Complete', icon: '✅' },
+    { id: 'failed', title: 'Failed', icon: '❌' }
   ];
+
+  const columnClass = (columnId) => {
+    if (columnId === 'failed') return 'board-column failed-column';
+    return 'board-column';
+  };
+
+  const cardClass = (task) => {
+    if (task.status === 'failed') return 'task-card failed-task';
+    return 'task-card';
+  };
 
   const priorityColors = {
     low: '#6b7280',
@@ -57,7 +68,7 @@ const TaskBoard = ({ tasks, onMoveTask, onEditTask, onDeleteTask, onAssignTask }
         {statusColumns.map(column => (
           <div
             key={column.id}
-            className={`board-column ${dragOverColumn === column.id ? 'drag-over' : ''}`}
+            className={`${columnClass(column.id)} ${dragOverColumn === column.id ? 'drag-over' : ''}`}
             onDragOver={(e) => handleDragOver(e, column.id)}
             onDragLeave={handleDragLeave}
             onDrop={(e) => handleDrop(e, column.id)}
@@ -71,7 +82,7 @@ const TaskBoard = ({ tasks, onMoveTask, onEditTask, onDeleteTask, onAssignTask }
               {getTasksByStatus(column.id).map(task => (
                 <div
                   key={task.id}
-                  className={`task-card ${draggedTask?.id === task.id ? 'dragging' : ''}`}
+                  className={`${cardClass(task)} ${draggedTask?.id === task.id ? 'dragging' : ''}`}
                   draggable
                   onDragStart={(e) => handleDragStart(e, task)}
                 >

@@ -507,6 +507,20 @@
   color: #2ecc71;
 }
 
+/* Failed Status Styling */
+.board-column.failed-column .column-header {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.board-column.failed-column {
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.task-card.failed-task {
+  border-color: rgba(239, 68, 68, 0.5);
+  background: rgba(239, 68, 68, 0.05);
+}
+
 /* Modal */
 .modal-overlay {
   position: fixed;
