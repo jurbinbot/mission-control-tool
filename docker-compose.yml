@@ -22,6 +22,10 @@ services:
       - BACKUP_SCHEDULE=${BACKUP_SCHEDULE:-0 0 * * *}
       - UPDATE_SCHEDULE=${UPDATE_SCHEDULE:-0 3 * * *}
       - OPENCLAW_API_TIMEOUT=${OPENCLAW_API_TIMEOUT:-5000}
+      # Auth settings
+      - AUTH_ENABLED=${AUTH_ENABLED:-false}
+      - AUTH_USERNAME=${AUTH_USERNAME:-admin}
+      - AUTH_PASSWORD=${AUTH_PASSWORD:-changeme}
       # Gateway host: use host.containers.internal for Podman to reach host
       - OPENCLAW_GATEWAY_HOST=${OPENCLAW_GATEWAY_HOST:-host.containers.internal}
       - OPENCLAW_GATEWAY_PORT=${OPENCLAW_GATEWAY_PORT:-18789}

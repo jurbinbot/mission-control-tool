@@ -7,6 +7,7 @@ const path = require('path');
 const config = require('./config');
 const requestLogger = require('./middleware/requestLogger');
 const errorLogger = require('./middleware/errorLogger');
+const basicAuth = require('./middleware/auth');
 const logger = require('./utils/logger');
 const monitoring = require('./services/monitoring');
 const processService = require('./services/process');
@@ -30,6 +31,9 @@ app.use((req, res, next) => {
   }
   next();
 });
+
+// Auth middleware (protects all routes except health)
+app.use(basicAuth);
 
 // Start scheduler
 scheduler.start();

@@ -9,6 +9,7 @@ class Config {
   }
 
   load() {
+    // First, load from .env file if it exists
     if (fs.existsSync(this.envFile)) {
       const envContent = fs.readFileSync(this.envFile, 'utf8');
       const lines = envContent.split('\n');
@@ -20,6 +21,13 @@ class Config {
       });
     }
 
+    // Override with process.env values (container environment takes precedence)
+    Object.keys(process.env).forEach(key => {
+      if (process.env[key] !== undefined) {
+        this.config[key] = process.env[key];
+      }
+    });
+
     // Default values
     this.config.PORT = this.config.PORT || '3001';
     this.config.LOG_LEVEL = this.config.LOG_LEVEL || 'info';
@@ -30,6 +38,11 @@ class Config {
     this.config.BACKUP_SCHEDULE = this.config.BACKUP_SCHEDULE || '0 0 * * *';
     this.config.UPDATE_SCHEDULE = this.config.UPDATE_SCHEDULE || '0 3 * * *';
     this.config.OPENCLAW_API_TIMEOUT = this.config.OPENCLAW_API_TIMEOUT || '5000';
+
+    // Auth settings (Basic Auth)
+    this.config.AUTH_ENABLED = this.config.AUTH_ENABLED || 'false';
+    this.config.AUTH_USERNAME = this.config.AUTH_USERNAME || '';
+    this.config.AUTH_PASSWORD = this.config.AUTH_PASSWORD || '';
 
     // Validate required variables
     this.validate();
@@ -54,14 +67,6 @@ class Config {
   getBoolean(key) {
     const value = this.config[key];
     return value === 'true' || value === '1' || value === 'yes';
-  }
-}
-
-module.exports = new Config();];
-  }
-
-  getNumber(key) {
-    return parseInt(this.config[key], 10);
   }
 }
 

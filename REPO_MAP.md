@@ -88,6 +88,15 @@ mission-control-tool/
 - **docker-compose.yml**: Podman Compose configuration (works with podman-compose)
 - **Dockerfile** (backend/frontend): Production-ready containers (Podman/Docker compatible)
 
+## Authentication
+
+Mission Control supports optional Basic Authentication:
+
+- Set `AUTH_ENABLED=true` to enable authentication
+- Configure `AUTH_USERNAME` and `AUTH_PASSWORD` in `.env`
+- When enabled, all endpoints except `/health` require authentication
+- WebSocket connections also require authentication (via Basic Auth headers)
+
 ## Status
 
 All phases complete:
