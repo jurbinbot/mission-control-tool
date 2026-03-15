@@ -65,7 +65,7 @@ services:
     environment:
       # API_URL is injected at runtime by docker-entrypoint.sh
       # Set this to the externally accessible backend URL (e.g., https://api.example.com)
-      - API_URL=${API_URL:-http://localhost:4432}
+      - API_URL=${API_URL:-https://missioncontrol.jurbin.com:4432}
     depends_on:
       - backend
     restart: unless-stopped
