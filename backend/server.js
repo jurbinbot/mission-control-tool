@@ -69,6 +69,13 @@ app.get('/', (req, res, next) => {
     next();
   }
 });
+
+// Runtime config for frontend
+app.get('/config.js', (req, res) => {
+  const apiUrl = config.get('API_URL') || `http://localhost:${config.getNumber('PORT')}`;
+  res.type('javascript');
+  res.send(`window.REACT_APP_API_URL = "${apiUrl}";`);
+});
 app.use(requestLogger);
 
 // Health check endpoint

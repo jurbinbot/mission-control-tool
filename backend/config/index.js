@@ -50,6 +50,9 @@ class Config {
     this.config.NOTIFY_ON_COMPLETE = this.config.NOTIFY_ON_COMPLETE || 'true';
     this.config.NOTIFY_ON_FAILED = this.config.NOTIFY_ON_FAILED || 'true';
 
+    // External URL for frontend
+    this.config.API_URL = this.config.API_URL || '';
+
     // Validate required variables
     this.validate();
   }
