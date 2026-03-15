@@ -44,6 +44,12 @@ class Config {
     this.config.AUTH_USERNAME = this.config.AUTH_USERNAME || '';
     this.config.AUTH_PASSWORD = this.config.AUTH_PASSWORD || '';
 
+    // Notification settings
+    this.config.NOTIFICATIONS_ENABLED = this.config.NOTIFICATIONS_ENABLED || 'true';
+    this.config.DISCORD_USER_ID = this.config.DISCORD_USER_ID || '';
+    this.config.NOTIFY_ON_COMPLETE = this.config.NOTIFY_ON_COMPLETE || 'true';
+    this.config.NOTIFY_ON_FAILED = this.config.NOTIFY_ON_FAILED || 'true';
+
     // Validate required variables
     this.validate();
   }

@@ -29,6 +29,11 @@ services:
       # Gateway host: use host.containers.internal for Podman to reach host
       - OPENCLAW_GATEWAY_HOST=${OPENCLAW_GATEWAY_HOST:-host.containers.internal}
       - OPENCLAW_GATEWAY_PORT=${OPENCLAW_GATEWAY_PORT:-18789}
+      # Notifications
+      - NOTIFICATIONS_ENABLED=${NOTIFICATIONS_ENABLED:-true}
+      - DISCORD_USER_ID=${DISCORD_USER_ID:-}
+      - NOTIFY_ON_COMPLETE=${NOTIFY_ON_COMPLETE:-true}
+      - NOTIFY_ON_FAILED=${NOTIFY_ON_FAILED:-true}
     volumes:
       - mission-control-backups:/app/backups
       - mission-control-logs:/app/logs
