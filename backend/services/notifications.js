@@ -4,7 +4,7 @@ const config = require('../config');
 
 /**
  * Notification Service
- * Sends notifications via OpenClaw message tool (Discord, etc.)
+ * Sends notifications via OpenClaw Gateway API or CLI
  */
 class NotificationService {
   constructor() {
@@ -12,10 +12,12 @@ class NotificationService {
     this.discordUserId = config.get('DISCORD_USER_ID') || null;
     this.notifyOnComplete = config.get('NOTIFY_ON_COMPLETE') !== 'false';
     this.notifyOnFailed = config.get('NOTIFY_ON_FAILED') !== 'false';
+    this.gatewayHost = config.get('OPENCLAW_GATEWAY_HOST') || 'host.containers.internal';
+    this.gatewayPort = config.get('OPENCLAW_GATEWAY_PORT') || '18789';
   }
 
   /**
-   * Send notification via OpenClaw message tool
+   * Send notification via OpenClaw Gateway API or CLI
    */
   async sendDiscordMessage(message) {
     if (!this.enabled) {
@@ -28,6 +30,29 @@ class NotificationService {
       return { success: false, reason: 'no_discord_user_id' };
     }
 
+    // Try Gateway API first (works in container environment)
+    try {
+      const escapedMessage = message.replace(/"/g, '\\"').replace(/\n/g, '\\n');
+      const result = execSync(
+        `curl -s -X POST "http://${this.gatewayHost}:${this.gatewayPort}/api/message" ` +
+        `-H "Content-Type: application/json" ` +
+        `-d '{"channel":"discord","to":"user:${this.discordUserId}","message":"${escapedMessage}"}'`,
+        { encoding: 'utf8', timeout: 10000 }
+      );
+      
+      const response = JSON.parse(result);
+      if (response.success || response.status === 'sent') {
+        logger.info('Discord notification sent via Gateway API');
+        return { success: true, method: 'gateway-api' };
+      }
+      
+      // If Gateway returned an error, fall through to CLI
+      logger.warn('Gateway API response:', response);
+    } catch (gatewayError) {
+      logger.info('Gateway API not available, trying CLI:', gatewayError.message);
+    }
+
+    // Fallback to CLI
     try {
       const escapedMessage = message.replace(/"/g, '\\"');
       const result = execSync(
@@ -35,11 +60,11 @@ class NotificationService {
         { encoding: 'utf8', timeout: 10000 }
       );
       
-      logger.info('Discord notification sent successfully');
-      return { success: true, output: result };
-    } catch (error) {
-      logger.error('Failed to send Discord notification', error);
-      return { success: false, error: error.message };
+      logger.info('Discord notification sent successfully via CLI');
+      return { success: true, method: 'cli' };
+    } catch (cliError) {
+      logger.error('Failed to send Discord notification', cliError);
+      return { success: false, error: cliError.message };
     }
   }
 
