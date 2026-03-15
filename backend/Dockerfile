@@ -25,16 +25,16 @@ COPY frontend-build /app/frontend/build
 RUN mkdir -p /app/backups /app/logs
 
 # Expose port
-EXPOSE 3001
+EXPOSE 4432
 
 # Environment variables
 ENV NODE_ENV=production
-ENV PORT=3001
+ENV PORT=4432
 ENV LOG_LEVEL=info
 
 # Health check (works with podman and docker)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:3001/health || exit 1
+  CMD wget --no-verbose --tries=1 --spider http://localhost:4432/health || exit 1
 
 # Start the server
 CMD ["node", "server.js"]
