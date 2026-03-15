@@ -97,6 +97,14 @@ Mission Control supports optional Basic Authentication:
 - When enabled, all endpoints except `/health` require authentication
 - WebSocket connections also require authentication (via Basic Auth headers)
 
+## Environment Configuration
+
+The frontend supports runtime API URL configuration via the `API_URL` environment variable:
+
+- Default: `http://localhost:3001`
+- Set `API_URL` in `.env` or pass to container: `API_URL=https://api.yourdomain.com`
+- The docker-entrypoint.sh script injects this at container startup into `window.REACT_APP_API_URL`
+
 ## Status
 
 All phases complete:

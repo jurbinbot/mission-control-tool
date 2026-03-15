@@ -55,7 +55,9 @@ services:
     ports:
       - "3000:80"
     environment:
-      - REACT_APP_API_URL=${REACT_APP_API_URL:-http://localhost:3001}
+      # API_URL is injected at runtime by docker-entrypoint.sh
+      # Set this to the externally accessible backend URL (e.g., https://api.example.com)
+      - API_URL=${API_URL:-http://localhost:3001}
     depends_on:
       - backend
     restart: unless-stopped

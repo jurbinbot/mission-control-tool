@@ -8,7 +8,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci
+RUN npm install --legacy-peer-deps
 
 # Copy source code
 COPY . .
@@ -29,8 +29,16 @@ COPY --from=builder /app/build /usr/share/nginx/html
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
+# Copy entrypoint script for runtime configuration
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
 # Expose port
 EXPOSE 80
 
-# Start nginx
+# Environment variable for API URL (can be set at runtime)
+ENV API_URL=http://localhost:3001
+
+# Start nginx with entrypoint
+ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["nginx", "-g", "daemon off;"]

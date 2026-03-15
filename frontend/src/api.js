@@ -1,6 +1,17 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+// Runtime configuration - can be set via window.REACT_APP_API_URL
+// or falls back to build-time env var or localhost
+const getApiBaseUrl = () => {
+  // Check for runtime-configured URL (set by docker-entrypoint.sh)
+  if (window.REACT_APP_API_URL) {
+    return window.REACT_APP_API_URL;
+  }
+  // Fall back to build-time env var or default
+  return process.env.REACT_APP_API_URL || 'http://localhost:3001';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 const api = axios.create({
   baseURL: API_BASE_URL,
