@@ -17,6 +17,7 @@ const backupService = require('./services/backup');
 const updateService = require('./services/update');
 const healthService = require('./services/health');
 const openclawService = require('./services/openclaw');
+const notificationService = require('./services/notifications');
 const boardTaskService = require('./models/boardTask');
 
 const app = express();
@@ -262,7 +263,7 @@ app.put('/board/tasks/:id', (req, res) => {
 });
 
 // Move task to a new status
-app.patch('/board/tasks/:id/status', (req, res) => {
+app.patch('/board/tasks/:id/status', async (req, res) => {
   const { status } = req.body;
   if (!status) {
     return res.status(400).json({ error: 'Status is required' });
@@ -272,6 +273,14 @@ app.patch('/board/tasks/:id/status', (req, res) => {
     return res.status(404).json({ error: 'Task not found' });
   }
   logger.info(`Board task moved: ${task.id} -> ${status}`);
+  
+  // Send notification for complete/failed status
+  if (status === 'complete' || status === 'failed') {
+    notificationService.notifyTaskStatusChange(task, null, status).catch(err => {
+      logger.error('Failed to send notification', err);
+    });
+  }
+  
   res.json(boardTaskService.formatTaskResponse(task));
 });
 
