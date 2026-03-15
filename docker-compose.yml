@@ -34,9 +34,12 @@ services:
       - DISCORD_USER_ID=${DISCORD_USER_ID:-}
       - NOTIFY_ON_COMPLETE=${NOTIFY_ON_COMPLETE:-true}
       - NOTIFY_ON_FAILED=${NOTIFY_ON_FAILED:-true}
+      # Data persistence
+      - DATA_DIR=/app/data
     volumes:
       - mission-control-backups:/app/backups
       - mission-control-logs:/app/logs
+      - mission-control-data:/app/data
       # Mount frontend build for static file serving
       - ${PWD}/frontend/build:/app/frontend/build:ro
       # Mount OpenClaw config for status commands
@@ -74,6 +77,7 @@ services:
 volumes:
   mission-control-backups:
   mission-control-logs:
+  mission-control-data:
 
 networks:
   mission-control-network:

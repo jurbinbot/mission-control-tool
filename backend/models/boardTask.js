@@ -3,6 +3,10 @@
  * Kanban-style task management for OpenClaw agents
  */
 
+const fs = require('fs');
+const path = require('path');
+const logger = require('../utils/logger');
+
 /**
  * Board Task Status States
  */
@@ -25,10 +29,85 @@ const BoardTaskPriority = {
 };
 
 /**
+ * Data directory for persistence
+ */
+const DATA_DIR = process.env.DATA_DIR || '/app/data';
+const TASKS_FILE = path.join(DATA_DIR, 'tasks.json');
+
+/**
  * In-memory storage for board tasks
  */
 let tasks = [];
 let taskIdCounter = 1;
+
+/**
+ * Ensure data directory exists
+ */
+function ensureDataDir() {
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+      logger.info(`Created data directory: ${DATA_DIR}`);
+    }
+  } catch (error) {
+    logger.error(`Failed to create data directory: ${error.message}`);
+  }
+}
+
+/**
+ * Save tasks to disk
+ */
+function saveTasks() {
+  try {
+    ensureDataDir();
+    const data = {
+      tasks: tasks.map(formatTaskResponse),
+      taskIdCounter,
+      savedAt: new Date().toISOString()
+    };
+    fs.writeFileSync(TASKS_FILE, JSON.stringify(data, null, 2), 'utf8');
+    logger.debug(`Saved ${tasks.length} tasks to ${TASKS_FILE}`);
+  } catch (error) {
+    logger.error(`Failed to save tasks: ${error.message}`);
+  }
+}
+
+/**
+ * Load tasks from disk
+ */
+function loadTasks() {
+  try {
+    ensureDataDir();
+    if (fs.existsSync(TASKS_FILE)) {
+      const data = JSON.parse(fs.readFileSync(TASKS_FILE, 'utf8'));
+      tasks = data.tasks.map(t => {
+        // Reconstruct task objects
+        const task = {
+          id: t.id,
+          title: t.title,
+          description: t.description,
+          status: t.status,
+          priority: t.priority,
+          assignedAgent: t.assignedAgent,
+          labels: t.labels,
+          createdAt: t.createdAt,
+          updatedAt: t.updatedAt,
+          completedAt: t.completedAt,
+          metadata: t.metadata
+        };
+        return task;
+      });
+      taskIdCounter = data.taskIdCounter || tasks.length + 1;
+      logger.info(`Loaded ${tasks.length} tasks from ${TASKS_FILE}`);
+    } else {
+      logger.info('No tasks file found, starting with empty task board');
+    }
+  } catch (error) {
+    logger.error(`Failed to load tasks: ${error.message}`);
+    tasks = [];
+    taskIdCounter = 1;
+  }
+}
 
 /**
  * Board Task Object Format
@@ -76,6 +155,7 @@ class BoardTask {
 function createTask(data) {
   const task = new BoardTask(data);
   tasks.push(task);
+  saveTasks();
   return task;
 }
 
@@ -106,7 +186,9 @@ function getTaskById(id) {
 function updateTask(id, data) {
   const task = getTaskById(id);
   if (!task) return null;
-  return task.update(data);
+  const result = task.update(data);
+  saveTasks();
+  return result;
 }
 
 /**
@@ -116,6 +198,7 @@ function deleteTask(id) {
   const index = tasks.findIndex(t => t.id === id);
   if (index === -1) return false;
   tasks.splice(index, 1);
+  saveTasks();
   return true;
 }
 
@@ -139,6 +222,7 @@ function assignTask(id, agentName) {
 function clearAllTasks() {
   tasks = [];
   taskIdCounter = 1;
+  saveTasks();
 }
 
 /**
@@ -187,6 +271,9 @@ function getBoardSummary() {
   return summary;
 }
 
+// Load tasks on module initialization
+loadTasks();
+
 module.exports = {
   BoardTask,
   BoardTaskStatus,
@@ -201,5 +288,7 @@ module.exports = {
   assignTask,
   clearAllTasks,
   formatTaskResponse,
-  getBoardSummary
+  getBoardSummary,
+  loadTasks,
+  saveTasks
 };
