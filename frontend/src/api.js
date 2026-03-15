@@ -49,4 +49,29 @@ export const getOpenClawRuntime = () => api.get('/openclaw/runtime');
 export const getOpenClawTasks = () => api.get('/openclaw/tasks');
 export const testOpenClawConnectivity = () => api.get('/openclaw/connectivity');
 
+// Board Task Management (Kanban-style)
+export const getBoardTasks = (filters = {}) => {
+  const params = new URLSearchParams();
+  if (filters.status) params.append('status', filters.status);
+  if (filters.priority) params.append('priority', filters.priority);
+  if (filters.assigned !== undefined) params.append('assigned', filters.assigned);
+  return api.get(`/board/tasks?${params.toString()}`);
+};
+
+export const getBoardSummary = () => api.get('/board/summary');
+
+export const getTasksByStatus = (status) => api.get(`/board/tasks/status/${status}`);
+
+export const getBoardTask = (id) => api.get(`/board/tasks/${id}`);
+
+export const createBoardTask = (taskData) => api.post('/board/tasks', taskData);
+
+export const updateBoardTask = (id, taskData) => api.put(`/board/tasks/${id}`, taskData);
+
+export const moveBoardTask = (id, status) => api.patch(`/board/tasks/${id}/status`, { status });
+
+export const assignBoardTask = (id, agentName) => api.patch(`/board/tasks/${id}/assign`, { agentName });
+
+export const deleteBoardTask = (id) => api.delete(`/board/tasks/${id}`);
+
 export default api;

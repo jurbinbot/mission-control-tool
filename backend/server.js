@@ -16,6 +16,7 @@ const backupService = require('./services/backup');
 const updateService = require('./services/update');
 const healthService = require('./services/health');
 const openclawService = require('./services/openclaw');
+const boardTaskService = require('./models/boardTask');
 
 const app = express();
 
@@ -190,6 +191,100 @@ app.post('/update/rollback', (req, res) => {
   const { updateName } = req.body;
   const result = updateService.rollback(updateName);
   res.json(result);
+});
+
+// Board Task Management (Kanban-style)
+// Get all board tasks
+app.get('/board/tasks', (req, res) => {
+  const { status, priority, assigned } = req.query;
+  let tasks = boardTaskService.getAllTasks();
+  
+  if (status) {
+    tasks = tasks.filter(t => t.status === status);
+  }
+  if (priority) {
+    tasks = tasks.filter(t => t.priority === priority);
+  }
+  if (assigned === 'true') {
+    tasks = tasks.filter(t => t.assignedAgent !== null);
+  } else if (assigned === 'false') {
+    tasks = tasks.filter(t => t.assignedAgent === null);
+  }
+  
+  res.json(tasks.map(boardTaskService.formatTaskResponse));
+});
+
+// Get board summary
+app.get('/board/summary', (req, res) => {
+  const summary = boardTaskService.getBoardSummary();
+  res.json(summary);
+});
+
+// Get tasks by status
+app.get('/board/tasks/status/:status', (req, res) => {
+  const tasks = boardTaskService.getTasksByStatus(req.params.status);
+  res.json(tasks.map(boardTaskService.formatTaskResponse));
+});
+
+// Get single task
+app.get('/board/tasks/:id', (req, res) => {
+  const task = boardTaskService.getTaskById(req.params.id);
+  if (!task) {
+    return res.status(404).json({ error: 'Task not found' });
+  }
+  res.json(boardTaskService.formatTaskResponse(task));
+});
+
+// Create new task
+app.post('/board/tasks', (req, res) => {
+  const task = boardTaskService.createTask(req.body);
+  logger.info(`Board task created: ${task.id} - ${task.title}`);
+  res.status(201).json(boardTaskService.formatTaskResponse(task));
+});
+
+// Update task
+app.put('/board/tasks/:id', (req, res) => {
+  const task = boardTaskService.updateTask(req.params.id, req.body);
+  if (!task) {
+    return res.status(404).json({ error: 'Task not found' });
+  }
+  logger.info(`Board task updated: ${task.id}`);
+  res.json(boardTaskService.formatTaskResponse(task));
+});
+
+// Move task to a new status
+app.patch('/board/tasks/:id/status', (req, res) => {
+  const { status } = req.body;
+  if (!status) {
+    return res.status(400).json({ error: 'Status is required' });
+  }
+  const task = boardTaskService.moveTask(req.params.id, status);
+  if (!task) {
+    return res.status(404).json({ error: 'Task not found' });
+  }
+  logger.info(`Board task moved: ${task.id} -> ${status}`);
+  res.json(boardTaskService.formatTaskResponse(task));
+});
+
+// Assign task to agent
+app.patch('/board/tasks/:id/assign', (req, res) => {
+  const { agentName } = req.body;
+  const task = boardTaskService.assignTask(req.params.id, agentName || null);
+  if (!task) {
+    return res.status(404).json({ error: 'Task not found' });
+  }
+  logger.info(`Board task assigned: ${task.id} -> ${agentName || 'unassigned'}`);
+  res.json(boardTaskService.formatTaskResponse(task));
+});
+
+// Delete task
+app.delete('/board/tasks/:id', (req, res) => {
+  const deleted = boardTaskService.deleteTask(req.params.id);
+  if (!deleted) {
+    return res.status(404).json({ error: 'Task not found' });
+  }
+  logger.info(`Board task deleted: ${req.params.id}`);
+  res.json({ success: true, id: req.params.id });
 });
 
 // WebSocket connection
