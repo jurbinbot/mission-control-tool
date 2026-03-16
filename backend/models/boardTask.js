@@ -186,9 +186,28 @@ function getTaskById(id) {
 function updateTask(id, data) {
   const task = getTaskById(id);
   if (!task) return null;
-  const result = task.update(data);
+  
+  // Update task properties directly (works for both new and loaded tasks)
+  if (data.title !== undefined) task.title = data.title;
+  if (data.description !== undefined) task.description = data.description;
+  if (data.status !== undefined) {
+    const oldStatus = task.status;
+    task.status = data.status;
+    if (data.status === BoardTaskStatus.COMPLETE && oldStatus !== BoardTaskStatus.COMPLETE) {
+      task.completedAt = new Date().toISOString();
+    }
+    if (data.status !== BoardTaskStatus.COMPLETE) {
+      task.completedAt = null;
+    }
+  }
+  if (data.priority !== undefined) task.priority = data.priority;
+  if (data.assignedAgent !== undefined) task.assignedAgent = data.assignedAgent;
+  if (data.labels !== undefined) task.labels = data.labels;
+  if (data.metadata !== undefined) task.metadata = { ...task.metadata, ...data.metadata };
+  task.updatedAt = new Date().toISOString();
+  
   saveTasks();
-  return result;
+  return task;
 }
 
 /**

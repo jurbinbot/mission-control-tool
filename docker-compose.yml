@@ -10,7 +10,7 @@ services:
       dockerfile: Dockerfile
     container_name: mission-control-backend
     ports:
-      - "4432:4432"
+      - "3001:3001"
     environment:
       - NODE_ENV=production
       - PORT=3001

@@ -146,9 +146,17 @@ function getBrainstormById(id) {
 function updateBrainstorm(id, data) {
   const brainstorm = getBrainstormById(id);
   if (!brainstorm) return null;
-  const result = brainstorm.update(data);
+  
+  // Update properties directly (works for both new and loaded brainstorms)
+  if (data.title !== undefined) brainstorm.title = data.title;
+  if (data.input !== undefined) brainstorm.input = data.input;
+  if (data.output !== undefined) brainstorm.output = data.output;
+  if (data.status !== undefined) brainstorm.status = data.status;
+  if (data.convertedTo !== undefined) brainstorm.convertedTo = data.convertedTo;
+  brainstorm.updatedAt = new Date().toISOString();
+  
   saveBrainstorms();
-  return result;
+  return brainstorm;
 }
 
 /**
