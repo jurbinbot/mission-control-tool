@@ -18,7 +18,7 @@ RUN npm ci --only=production
 # Copy application code
 COPY . .
 
-# Copy frontend build (must be in backend directory for COPY)
+# Copy frontend build (built with: cd frontend && npm run build && cp -r build ../backend/frontend-build)
 COPY frontend-build /app/frontend/build
 
 # Create necessary directories
