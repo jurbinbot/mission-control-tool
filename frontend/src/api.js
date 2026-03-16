@@ -88,4 +88,22 @@ export const deleteBoardTask = (id) => api.delete(`/board/tasks/${id}`);
 
 export const claimNextTask = (agentName) => api.post('/board/tasks/claim', { agentName });
 
+// Brainstorm Management
+export const getBrainstorms = (status = null) => {
+  const params = status ? `?status=${status}` : '';
+  return api.get(`/brainstorms${params}`);
+};
+
+export const getBrainstorm = (id) => api.get(`/brainstorms/${id}`);
+
+export const createBrainstorm = (data) => api.post('/brainstorms', data);
+
+export const updateBrainstorm = (id, data) => api.put(`/brainstorms/${id}`, data);
+
+export const processBrainstorm = (id) => api.post(`/brainstorms/${id}/process`);
+
+export const convertBrainstorm = (id) => api.post(`/brainstorms/${id}/convert`);
+
+export const deleteBrainstorm = (id) => api.delete(`/brainstorms/${id}`);
+
 export default api;

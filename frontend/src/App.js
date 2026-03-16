@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { getHealth, getMetrics, getBoardTasks, createBoardTask, updateBoardTask, moveBoardTask, deleteBoardTask, assignBoardTask, getOpenClawHeartbeat } from './api';
+import { getHealth, getMetrics, getBoardTasks, createBoardTask, updateBoardTask, moveBoardTask, deleteBoardTask, assignBoardTask, getOpenClawHeartbeat, getBrainstorms } from './api';
 import TaskBoard from './TaskBoard';
 import TaskModal from './TaskModal';
+import Brainstorming from './Brainstorming';
 import './App.css';
 
 function App() {
@@ -10,6 +11,7 @@ function App() {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [boardTasks, setBoardTasks] = useState([]);
+  const [brainstorms, setBrainstorms] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const [modalMode, setModalMode] = useState('create');
@@ -30,6 +32,12 @@ function App() {
       fetchBoardTasks();
     }
   }, [backendStatus]);
+
+  useEffect(() => {
+    if (backendStatus === 'connected') {
+      fetchBrainstorms();
+    }
+  }, [backendStatus, activeTab]);
 
   const checkBackendHealth = async () => {
     try {
@@ -65,6 +73,15 @@ function App() {
       setBoardTasks(response.data);
     } catch (err) {
       console.error('Failed to fetch board tasks:', err);
+    }
+  };
+
+  const fetchBrainstorms = async () => {
+    try {
+      const response = await getBrainstorms();
+      setBrainstorms(response.data);
+    } catch (err) {
+      console.error('Failed to fetch brainstorms:', err);
     }
   };
 
@@ -183,6 +200,12 @@ function App() {
           onClick={() => setActiveTab('tasks')}
         >
           Tasks
+        </button>
+        <button
+          className={`tab-btn ${activeTab === 'brainstorm' ? 'active' : ''}`}
+          onClick={() => setActiveTab('brainstorm')}
+        >
+          Brainstorm
         </button>
       </nav>
 
@@ -331,6 +354,13 @@ function App() {
               onAssignTask={handleAssignTask}
             />
           </section>
+        )}
+
+        {activeTab === 'brainstorm' && (
+          <Brainstorming
+            brainstorms={brainstorms}
+            onRefresh={fetchBrainstorms}
+          />
         )}
 
         {backendStatus === 'disconnected' && (

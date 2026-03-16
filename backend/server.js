@@ -19,6 +19,8 @@ const healthService = require('./services/health');
 const openclawService = require('./services/openclaw');
 const notificationService = require('./services/notifications');
 const boardTaskService = require('./models/boardTask');
+const brainstormService = require('./services/brainstorm');
+const brainstormModel = require('./models/brainstorm');
 
 const app = express();
 
@@ -341,6 +343,113 @@ app.post('/board/tasks/claim', (req, res) => {
     claimed: true, 
     task: boardTaskService.formatTaskResponse(task) 
   });
+});
+
+// Brainstorm Management
+// Get all brainstorms
+app.get('/brainstorms', (req, res) => {
+  const { status } = req.query;
+  let brainstorms = brainstormModel.getAllBrainstorms();
+  
+  if (status) {
+    brainstorms = brainstorms.filter(b => b.status === status);
+  }
+  
+  res.json(brainstorms.map(brainstormModel.formatBrainstormResponse));
+});
+
+// Get single brainstorm
+app.get('/brainstorms/:id', (req, res) => {
+  const brainstorm = brainstormModel.getBrainstormById(req.params.id);
+  if (!brainstorm) {
+    return res.status(404).json({ error: 'Brainstorm not found' });
+  }
+  res.json(brainstormModel.formatBrainstormResponse(brainstorm));
+});
+
+// Create new brainstorm
+app.post('/brainstorms', (req, res) => {
+  const brainstorm = brainstormModel.createBrainstorm(req.body);
+  logger.info(`Brainstorm created: ${brainstorm.id} - ${brainstorm.title}`);
+  res.status(201).json(brainstormModel.formatBrainstormResponse(brainstorm));
+});
+
+// Update brainstorm
+app.put('/brainstorms/:id', (req, res) => {
+  const brainstorm = brainstormModel.updateBrainstorm(req.params.id, req.body);
+  if (!brainstorm) {
+    return res.status(404).json({ error: 'Brainstorm not found' });
+  }
+  logger.info(`Brainstorm updated: ${brainstorm.id}`);
+  res.json(brainstormModel.formatBrainstormResponse(brainstorm));
+});
+
+// Process brainstorm through agent
+app.post('/brainstorms/:id/process', async (req, res) => {
+  const brainstorm = brainstormModel.getBrainstormById(req.params.id);
+  if (!brainstorm) {
+    return res.status(404).json({ error: 'Brainstorm not found' });
+  }
+  
+  try {
+    const result = await brainstormService.processBrainstormInput(brainstorm.input, brainstorm.title);
+    
+    if (!result.success) {
+      return res.status(500).json({ error: result.error || 'Failed to process brainstorm' });
+    }
+    
+    const updated = brainstormModel.processBrainstorm(req.params.id, result.output);
+    logger.info(`Brainstorm processed: ${brainstorm.id}`);
+    res.json(brainstormModel.formatBrainstormResponse(updated));
+  } catch (error) {
+    logger.error(`Failed to process brainstorm: ${error.message}`);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Convert brainstorm to tasks
+app.post('/brainstorms/:id/convert', (req, res) => {
+  const brainstorm = brainstormModel.getBrainstormById(req.params.id);
+  if (!brainstorm) {
+    return res.status(404).json({ error: 'Brainstorm not found' });
+  }
+  
+  if (!brainstorm.output) {
+    return res.status(400).json({ error: 'Brainstorm must be processed before conversion' });
+  }
+  
+  // Parse tasks from output
+  const suggestedTasks = brainstormService.parseTasksFromOutput(brainstorm.output);
+  const createdTasks = [];
+  
+  // Create tasks from suggestions
+  for (const taskData of suggestedTasks) {
+    const task = boardTaskService.createTask({
+      ...taskData,
+      status: 'backlog',
+      metadata: { source: 'brainstorm', brainstormId: brainstorm.id }
+    });
+    createdTasks.push(task.id);
+    logger.info(`Task created from brainstorm: ${task.id}`);
+  }
+  
+  // Mark brainstorm as converted
+  const updated = brainstormModel.convertBrainstorm(req.params.id, createdTasks);
+  
+  res.json({
+    brainstorm: brainstormModel.formatBrainstormResponse(updated),
+    tasks: createdTasks.map(id => boardTaskService.formatTaskResponse(boardTaskService.getTaskById(id)))
+  });
+});
+
+// Delete brainstorm
+app.delete('/brainstorms/:id', (req, res) => {
+  const deleted = brainstormModel.deleteBrainstorm(req.params.id);
+  if (!deleted) {
+    return res.status(404).json({ error: 'Brainstorm not found' });
+  }
+  logger.info(`Brainstorm deleted: ${req.params.id}`);
+  res.json({ success: true, id: req.params.id });
 });
 
 // WebSocket connection
